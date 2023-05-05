@@ -1,0 +1,8 @@
+on: [push]
+
+jobs:
+  build:
+  name: docs_preview
+  runs-on: ubuntu-latest
+  steps:
+  - uses: readthedocs/actions/preview@v1
