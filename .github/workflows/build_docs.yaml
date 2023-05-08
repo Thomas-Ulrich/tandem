@@ -1,8 +1,21 @@
-on: [push]
+name: Doc preview
+
+on:
+  pull_request:
+    branches:
+      - 'master'
+
+  push:
+    branches:
+      - 'master'
+
+  workflow_dispatch:
 
 jobs:
-  build:
-  name: docs_preview
-  runs-on: ubuntu-latest
-  steps:
-  - uses: readthedocs/actions/preview@v1
+
+  documentation-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: readthedocs/actions/preview@v1
+        with:
+          project-slug: "tandem"
