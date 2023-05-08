@@ -1,18 +1,13 @@
 name: Doc preview
-
 on:
   pull_request:
     branches:
       - 'master'
-
   push:
     branches:
-      - ['master', ' thomas/fix_doc']
-
+      - 'thomas/fix_doc'
   workflow_dispatch:
-
 jobs:
-
   documentation-preview:
     runs-on: ubuntu-latest
     steps:
