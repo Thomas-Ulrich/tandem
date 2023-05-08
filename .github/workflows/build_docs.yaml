@@ -1,15 +1,17 @@
-name: Doc preview
+name: Preview Docs
+
 on:
-  pull_request:
-    branches:
-      - 'master'
-  push:
-    branches:
-      - 'thomas/fix_doc'
-  workflow_dispatch:
+  pull_request_target:
+    types: [opened, edited, synchronize]
+
+
+permissions:
+  pull-requests: write
+
 jobs:
-  documentation-preview:
+  documentation-links:
     runs-on: ubuntu-latest
+
     steps:
       - uses: readthedocs/actions/preview@v1
         with:
