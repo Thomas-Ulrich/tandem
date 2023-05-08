@@ -7,7 +7,7 @@ on:
 
   push:
     branches:
-      - 'master'
+      - ['master', ' thomas/fix_doc']
 
   workflow_dispatch:
 
