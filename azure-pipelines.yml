@@ -24,13 +24,13 @@ steps:
 
  - task: Cache@2
    inputs:
-      key: $(PETSC_CACHE_KEY)
-      restoreKeys: $(PETSC_CACHE_KEY)-*
-      path: $(PETSC_CACHE_FOLDER)
-      cacheHitVar: CACHE_HIT
+    key: ${{ variables.PETSC_CACHE_KEY }}
+    restoreKeys: ${{ variables.PETSC_CACHE_KEY }}-*
+    path: ${{ variables.PETSC_CACHE_FOLDER }}
+    cacheHitVar: CACHE_HIT
    displayName: 'try restoring cached PETSc Installation'
 
- - script: |
+ - script:
     git submodule update --init --recursive
    displayName: 'Initialize and Update Submodules'
 
@@ -50,19 +50,19 @@ steps:
       cd petsc-3.14.6
       ./configure --with-fortran-bindings=0 --with-debugging=0 \
           --with-memalign=32 --with-64-bit-indices \
-          CC=mpicc CXX=mpicxx FC=mpif90 --prefix=$(PETSC_CACHE_FOLDER) 
+          CC=mpicc CXX=mpicxx FC=mpif90 --prefix=${{ variables.PETSC_CACHE_FOLDER }} 
       COPTFLAGS="-g -O3" CXXOPTFLAGS="-g -O3"
       make PETSC_DIR=`pwd` PETSC_ARCH=arch-linux-c-opt -j4
       make PETSC_DIR=`pwd` PETSC_ARCH=arch-linux-c-opt install
       cd ..
    displayName: 'install petsc'
-   condition: ne(variables.CACHE_RESTORED, 'true')
+   condition: ne(variables.CACHE_HIT, 'true')
 
 
  - bash: |
     set -euo pipefail
     mkdir build && cd build
-    cmake .. -DCMAKE_PREFIX_PATH=$(PETSC_CACHE_FOLDER)
+    cmake .. -DCMAKE_PREFIX_PATH=${{ variables.PETSC_CACHE_FOLDER }}
     make -j2
     make test
    displayName: 'install and test tandem'
