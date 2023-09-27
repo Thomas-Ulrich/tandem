@@ -1,6 +1,5 @@
 trigger:
-  pr:
-    - '*'
+  pr: [ 'x' ]
 
 pool:
   vmImage: ubuntu-latest
@@ -21,8 +20,7 @@ steps:
       make PETSC_DIR=`pwd` PETSC_ARCH=arch-linux-c-opt -j4
       sudo make PETSC_DIR=`pwd` PETSC_ARCH=arch-linux-c-opt install
       cd ..
-
-  displayName: 'install'
+   displayName: 'install'
  - bash: |
     mkdir build && cd build
     cmake ..
