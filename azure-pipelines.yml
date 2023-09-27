@@ -18,17 +18,23 @@ steps:
    displayName: 'before_install'
 
  - bash: |
-      wget http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-lite-3.13.3.tar.gz
-      tar -xvf petsc-lite-3.13.3.tar.gz
-      cd petsc-3.13.3
-      ./configure --with-debugging=0 CC=mpicc CXX=mpicxx --prefix=/usr/local/
-      make PETSC_DIR=`pwd` PETSC_ARCH=arch-linux-c-opt -j4
-      sudo make PETSC_DIR=`pwd` PETSC_ARCH=arch-linux-c-opt install
-      cd ..
-   displayName: 'install'
+      set -euo pipefail
+      wget http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-lite-3.14.6.tar.gz
+      tar -xvf petsc-lite-3.14.6.tar.gz
+      cd petsc-3.14.6
+      ./configure --with-fortran-bindings=0 --with-debugging=0 \
+          --with-memalign=32 --with-64-bit-indices \
+          CC=mpicc CXX=mpicxx --prefix=/usr/local/ 
+     COPTFLAGS="-g -O3" CXXOPTFLAGS="-g -O3"
+     make PETSC_DIR=`pwd` PETSC_ARCH=arch-linux-c-opt -j4
+     make PETSC_DIR=`pwd` PETSC_ARCH=arch-linux-c-opt install
+     cd ..
+
+   displayName: 'install petsc'
  - bash: |
+    set -euo pipefail
     mkdir build && cd build
     cmake ..
     make -j2
     make test
-   displayName: 'Run a multi-line script'
+   displayName: 'install and test tandem'
