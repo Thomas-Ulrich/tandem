@@ -27,6 +27,8 @@ steps:
       wget http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-lite-3.14.6.tar.gz
       tar -xvf petsc-lite-3.14.6.tar.gz
       cd petsc-3.14.6
+      echo $pwd
+      stop
       ./configure --with-fortran-bindings=0 --with-debugging=0 \
           --with-memalign=32 --with-64-bit-indices \
           CC=mpicc CXX=mpicxx FC=mpif90 --prefix=/usr/local/ 
@@ -39,7 +41,7 @@ steps:
  - bash: |
     set -euo pipefail
     mkdir build && cd build
-    cmake ..
+    cmake .. -DCMAKE_PREFIX_PATH=/path/to/your/libs
     make -j2
     make test
    displayName: 'install and test tandem'
