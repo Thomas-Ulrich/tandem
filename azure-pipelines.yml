@@ -25,10 +25,10 @@ steps:
       ./configure --with-fortran-bindings=0 --with-debugging=0 \
           --with-memalign=32 --with-64-bit-indices \
           CC=mpicc CXX=mpicxx --prefix=/usr/local/ 
-     COPTFLAGS="-g -O3" CXXOPTFLAGS="-g -O3"
-     make PETSC_DIR=`pwd` PETSC_ARCH=arch-linux-c-opt -j4
-     make PETSC_DIR=`pwd` PETSC_ARCH=arch-linux-c-opt install
-     cd ..
+      COPTFLAGS="-g -O3" CXXOPTFLAGS="-g -O3"
+      make PETSC_DIR=`pwd` PETSC_ARCH=arch-linux-c-opt -j4
+      make PETSC_DIR=`pwd` PETSC_ARCH=arch-linux-c-opt install
+      cd ..
 
    displayName: 'install petsc'
  - bash: |
