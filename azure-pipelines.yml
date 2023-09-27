@@ -1,5 +1,5 @@
 trigger:
-  pr: [ 'x' ]
+  pr: [ '*' ]
 
 pool:
   vmImage: ubuntu-latest
