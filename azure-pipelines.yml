@@ -1,3 +1,4 @@
+
 pr:
   # Do not run Azure CI for docs-only/example-only changes:
   paths:
@@ -6,11 +7,25 @@ pr:
     exclude:
       - docs
 
+variables:
+  PETSC_CACHE_FOLDER: $(Pipeline.Workspace)/.petsc
+
 pool:
   vmImage: ubuntu-latest
 
 steps:
  - checkout: self
+
+ - task: Cache@2
+    inputs:
+      key: $(PETSC_CACHE_KEY)
+      restoreKeys: |
+        $(PETSC_CACHE_KEY)-*
+      paths:
+        - $(PETSC_CACHE_FOLDER)
+      cacheHitVar: CACHE_HIT
+    displayName: 'try restoring cached PETSc Installation'
+
  - script: |
     git submodule update --init --recursive
    displayName: 'Initialize and Update Submodules'
@@ -25,6 +40,7 @@ steps:
 
  - bash: |
       set -euo pipefail
+      mkdir $(PETSC_CACHE_FOLDER)
       wget http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-lite-3.14.6.tar.gz
       tar -xvf petsc-lite-3.14.6.tar.gz
       cd petsc-3.14.6
@@ -32,17 +48,19 @@ steps:
       stop
       ./configure --with-fortran-bindings=0 --with-debugging=0 \
           --with-memalign=32 --with-64-bit-indices \
-          CC=mpicc CXX=mpicxx FC=mpif90 --prefix=/usr/local/ 
+          CC=mpicc CXX=mpicxx FC=mpif90 --prefix=$(PETSC_CACHE_FOLDER) 
       COPTFLAGS="-g -O3" CXXOPTFLAGS="-g -O3"
       make PETSC_DIR=`pwd` PETSC_ARCH=arch-linux-c-opt -j4
-      sudo make PETSC_DIR=`pwd` PETSC_ARCH=arch-linux-c-opt install
+      make PETSC_DIR=`pwd` PETSC_ARCH=arch-linux-c-opt install
       cd ..
-
    displayName: 'install petsc'
+   condition: ne(variables.CACHE_RESTORED, 'true')
+
+
  - bash: |
     set -euo pipefail
     mkdir build && cd build
-    cmake .. -DCMAKE_PREFIX_PATH=/path/to/your/libs
+    cmake .. -DCMAKE_PREFIX_PATH=$PETSC_BUILD
     make -j2
     make test
    displayName: 'install and test tandem'
