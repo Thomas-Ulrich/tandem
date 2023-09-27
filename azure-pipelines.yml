@@ -17,14 +17,14 @@ steps:
  - checkout: self
 
  - task: Cache@2
-    inputs:
+   inputs:
       key: $(PETSC_CACHE_KEY)
       restoreKeys: |
         $(PETSC_CACHE_KEY)-*
       paths:
         - $(PETSC_CACHE_FOLDER)
       cacheHitVar: CACHE_HIT
-    displayName: 'try restoring cached PETSc Installation'
+   displayName: 'try restoring cached PETSc Installation'
 
  - script: |
     git submodule update --init --recursive
