@@ -10,6 +10,11 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
+- checkout: self
+- script: |
+    git submodule update --init --recursive
+  displayName: 'Initialize and Update Submodules'
+
  - bash: |
       set -euo pipefail
       sudo apt-get update
