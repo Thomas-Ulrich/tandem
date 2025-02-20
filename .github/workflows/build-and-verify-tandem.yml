@@ -81,22 +81,46 @@ jobs:
           make PETSC_DIR=`pwd` PETSC_ARCH=${{ env.ARCHITECTURE }} install
           cd ..
 
-      - name: Build and Test Tandem
+      - name: Build and Test Tandem 2d
         run: |
           set -euo pipefail
-          mkdir build && cd build
+          mkdir build_2d_p3 && cd build_2d_p3
           cmake .. \
                 -DCMAKE_PREFIX_PATH=${{ env.PETSC_CACHE_FOLDER }} \
                 -DDOMAIN_DIMENSION=2 \
-                -DPOLYNOMIAL_DEGREE=2 \
+                -DPOLYNOMIAL_DEGREE=3 \
                 -DCMAKE_C_COMPILER=${{ matrix.compiler.cc }} \
                 -DCMAKE_CXX_COMPILER=${{ matrix.compiler.cxx }} 
      
           make -j$(nproc)
           make test
 
-      - name: verify static
+      - name: Build and Test Tandem 3d
+        if: matrix.compiler.cc == 'gcc-13'
+        run: |
+          set -euo pipefail
+          mkdir build_3d_p3 && cd build_3d_p3
+          cmake .. \
+                -DCMAKE_PREFIX_PATH=${{ env.PETSC_CACHE_FOLDER }} \
+                -DDOMAIN_DIMENSION=3 \
+                -DPOLYNOMIAL_DEGREE=3 \
+                -DCMAKE_C_COMPILER=${{ matrix.compiler.cc }} \
+                -DCMAKE_CXX_COMPILER=${{ matrix.compiler.cxx }} 
+     
+          make -j$(nproc)
+          make test
+
+      - name: verify static 2d
+        if: matrix.compiler.cc == 'gcc-13'
         run: |
           cd examples/elasticity/2d
           gmsh -2 circular_hole.geo 
-          ../../../build/app/static circular_hole.toml --resolution 0.8  --matrix_free yes --mg_strategy twolevel --mg_coarse_level 1  --petsc -options_file ../../options/mg_cheby.cfg
+          ../../../build_2d_p3/app/static circular_hole.toml --resolution 0.8  --matrix_free yes --mg_strategy twolevel --mg_coarse_level 1  --petsc -options_file ../../options/mg_cheby.cfg
+
+      - name: verify static 3d
+        if: matrix.compiler.cc == 'gcc-13'
+        run: |
+          cd examples/elasticity/3d
+          gmsh -3 spherical_hole.geo 
+          mpirun --oversubscribe -n $(nprocs) ../../../build_3d_p3/app/static spherical_hole.toml --resolution 0.8  --matrix_free yes --mg_strategy twolevel --mg_coarse_level 1  --petsc -options_file ../../options/mg_cheby.cfg
+
