@@ -185,6 +185,7 @@ set(APP_COMMON_SRCS
     common/MGConfig.cpp
     common/PetscDGMatrix.cpp
     common/PetscDGShell.cpp
+    common/PetscHierarchicalGreen.cpp
     common/PetscInterplMatrix.cpp
     common/PetscLinearSolver.cpp
     common/PetscVector.cpp

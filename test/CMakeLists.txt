@@ -60,6 +60,22 @@ add_executable(test-tensor tensor.cpp)
 target_link_libraries(test-tensor test-runner)
 doctest_discover_tests(test-tensor)
 
+add_executable(test-hierarchical-matrix hierarchical_matrix.cpp)
+target_link_libraries(test-hierarchical-matrix test-runner)
+doctest_discover_tests(test-hierarchical-matrix)
+
+add_executable(test-hierarchical-green hierarchical_green.cpp
+    ../app/common/PetscHierarchicalGreen.cpp)
+target_include_directories(test-hierarchical-green PRIVATE ../app ../src)
+target_link_libraries(test-hierarchical-green PETSc::PETSc)
+add_test(NAME hierarchical-green-serial COMMAND test-hierarchical-green)
+find_package(MPI REQUIRED)
+if(MPIEXEC_EXECUTABLE)
+    add_test(NAME hierarchical-green-mpi
+        COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 4 ${MPIEXEC_PREFLAGS}
+                $<TARGET_FILE:test-hierarchical-green> ${MPIEXEC_POSTFLAGS})
+endif()
+
 add_executable(test-util util.cpp)
 target_link_libraries(test-util test-runner)
 doctest_discover_tests(test-util)

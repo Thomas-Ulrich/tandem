@@ -1,4 +1,5 @@
 #include "SeasQDDiscreteGreenOperator.h"
+#include "common/PetscHierarchicalGreen.h"
 #include "common/PetscLoggingUtils.h"
 #include "common/PetscUtil.h"
 
@@ -8,6 +9,7 @@
 
 #include <cassert>
 #include <filesystem>
+#include <limits>
 namespace fs = std::filesystem;
 
 namespace tndm {
@@ -75,6 +77,35 @@ SeasQDDiscreteGreenOperator::SeasQDDiscreteGreenOperator(
         checkpoint_enabled_ = true;
     }
     get_discrete_greens_function(mesh);
+
+    PetscBool hierarchical = PETSC_FALSE;
+    CHKERRTHROW(PetscOptionsGetBool(nullptr, nullptr, "-gf_hmatrix", &hierarchical, nullptr));
+    if (hierarchical) {
+        // Vertex bounds are conservative for planar facets. Compression accuracy is
+        // independently verified from matrix entries, including for curved meshes.
+        auto const* vertices =
+            dynamic_cast<VertexData<DomainDimension> const*>(mesh.vertices().data());
+        if (!vertices) {
+            throw std::runtime_error("GF hierarchical compression requires vertex coordinates");
+        }
+        std::vector<HierarchicalMatrix::Box> boxes(base::adapter().num_local_elements());
+        auto const& map = base::adapter().fault_map();
+        for (std::size_t f = 0; f < boxes.size(); ++f) {
+            auto lids = mesh.template downward<0, DomainDimension - 1>(map.fctNo(f));
+            for (std::size_t d = 0; d < DomainDimension; ++d) {
+                boxes[f].lo[d] = std::numeric_limits<double>::infinity();
+                boxes[f].hi[d] = -std::numeric_limits<double>::infinity();
+                for (auto v : lids) {
+                    double x = vertices->getVertices()[v][d];
+                    boxes[f].lo[d] = std::min(boxes[f].lo[d], x);
+                    boxes[f].hi[d] = std::max(boxes[f].hi[d], x);
+                }
+            }
+        }
+        CHKERRTHROW(compressGreenMatrix(&G_, S_->vec(), boxes,
+                                        base::adapter().traction_block_size(),
+                                        base::friction().slip_block_size()));
+    }
 }
 
 SeasQDDiscreteGreenOperator::~SeasQDDiscreteGreenOperator() {
